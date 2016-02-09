@@ -9,25 +9,29 @@ Author URI: http://www.pimpampum.net
 License: License: GPLv2
 */
 
+require "videoanalytics_api.php";
 
-add_action( 'admin_init', 'pimpampum_newsletter_options_init' );
-add_action( 'admin_menu', 'pimpampum_newsletter_options_add_page' ); 
+add_action( 'admin_init', 'videoanalytics_options_init' );
+add_action( 'admin_menu', 'videoanalytics_options_add_page' ); 
 
 
-function pimpampum_newsletter_options_init(){
- register_setting( 'pimpampum_newsletter_options', 'pimpampum_newsletter_options');
+/* registrar les opcions del plugin */
+function videoanalytics_options_init(){
+ register_setting( 'videoanalytics_options', 'videoanalytics_options');
 } 
 
-function pimpampum_newsletter_options_add_page() {
-add_options_page( "Pimpampum newsletter", "Video analytics setup", "activate_plugins", "ppp_newsletter_options", "ppp_newsletter_options_do_page");
+/* afegir pàgina a l'escriptori*/
+
+function videoanalytics_options_add_page() {
+  add_options_page( "Video analytics", "Video analytics setup", "activate_plugins", "videoanalytics_options", "videoanalytics_options_do_page");
 
  /*add_theme_page(
-  __( 'Opcions de Newsletter', 'pimpampum_newsletter' ),
-  __( 'Opcions de Newsletter', 'pimpampum_newsletter' ),
-   'edit_theme_options', 'pimpampum_newsletter_options', 'ppp_newsletter_options_do_page' );*/
+  __( 'Opcions de Newsletter', 'videoanalytics_' ),
+  __( 'Opcions de Newsletter', 'videoanalytics_' ),
+   'edit_theme_options', 'videoanalytics_options', 'ppp_newsletter_options_do_page' );*/
 } 
 
-function ppp_newsletter_options_do_page() {
+function videoanalytics_options_do_page() {
 
   global $options;
 
@@ -40,9 +44,9 @@ function ppp_newsletter_options_do_page() {
 <p><strong><?php _e( 'Options saved', 'mt' ); ?></strong></p></div>
 <?php endif; ?> 
 <form method="post" action="options.php">
-<?php settings_fields( 'pimpampum_newsletter_options' ); ?>  
+<?php settings_fields( 'videoanalytics_options' ); ?>  
 
-<?php $options = get_option( 'pimpampum_newsletter_options' ); 
+<?php $options = get_option( 'videoanalytics_options' ); 
 
 ?>
 
@@ -52,20 +56,8 @@ function ppp_newsletter_options_do_page() {
 <?php
  
 
-if(!isset($options['api_key'])){
-  $options['api_key']="";
-}
-if(!isset($options['test_list_id'])){
-  $options['test_list_id']="";
-}
-if(!isset($options['ok_list_id'])){
-  $options['ok_list_id']="";
-}
-if(!isset($options['from_email'])){
-  $options['from_email']="";
-}
-if(!isset($options['from_name'])){
-  $options['from_name']="";
+if(!isset($options['db_name'])){
+  $options['db_name']="";
 }
 
 ?>
@@ -79,7 +71,7 @@ if(!isset($options['from_name'])){
 <tr valign="top"><th scope="row">
 <?php print __("Database name","mt")?></th>
 <td>
-<input id="pimpampum_newsletter_options[api_key]" type="text" name="pimpampum_newsletter_options[api_key]" value="<?php esc_attr_e( $options['api_key'] ); ?>" />
+<input id="videoanalytics_options[db_name]" type="text" name="videoanalytics_options[db_name]" value="<?php esc_attr_e( $options['db_name'] ); ?>" />
 </td>
 </tr> 
 
@@ -101,21 +93,63 @@ if(!isset($options['from_name'])){
 add_action('admin_menu','my_plugin_menu');
 
 function my_plugin_menu(){
-  add_menu_page('Video analytics setup','Video analytics','edit_posts','newsletter','my_plugin_options','dashicons-email');
+  add_menu_page('Video analytics setup','Video analytics','edit_posts','videoanalytics','my_plugin_options','dashicons-welcome-view-site');
 }
 
 function my_plugin_options(){
-
-  ?>
+?>
   <div class="wrap">
-  <h1>Video analytics</h1>
-  <p>List available stats</p>
-  <a target="newsletter" href="<?php print bloginfo("wpurl")?>/mailchimp-template"><?php print __("View","mt")?></a>
-  </div>
+   <h1>Video analytics</h1>
   <?php
 
+  if(isset($_GET['rndk'])){
+
+   
+    $data=va_session_get($_GET['rndk']);
+    ?>
+<p>Dades per la sessió <?php print  $_GET['rndk']?></p>
+
+  <?php
+ 
+
+    print("<ul>");
+    foreach ($data as $post)
+    {
+        print('<li>'.$post->video.'|'.$post->ta.'|'.$post->act.'|'.$post->params.'</a>');
+         print('</li>');
+    }
+    print("</ul>");
+    
+
+  }else{
+
+  ?>
+
+ 
+  <p>List available stats</p>
+
+  <?php
+  $sessions=va_get_sessions();
+
+    print("<ul>");
+    foreach ($sessions as $post)
+    {
+        print('<li><a href="?page=videoanalytics&rndk='.$post->rndk.'">'.$post->rndk.'|'.$post->video.'</a>');
+         print('</li>');
+    }
+    print("</ul>");
+    ?>
+
+  <a target="newsletter" href="<?php print bloginfo("wpurl")?>/mailchimp-template"><?php print __("View","mt")?></a>
+
+  <?php
+}
+?>
+  </div>
+  <?php
 }
 
+/*
 add_action('init', function() {
 
   
@@ -154,5 +188,5 @@ if(count($url2)>1){
      
   }
 });
-
+*/
 
