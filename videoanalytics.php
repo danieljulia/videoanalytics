@@ -97,6 +97,9 @@ function my_plugin_menu(){
 }
 
 function my_plugin_options(){
+
+
+
 ?>
   <div class="wrap">
    <h1>Video analytics</h1>
@@ -108,6 +111,102 @@ function my_plugin_options(){
     $data=va_session_get($_GET['rndk']);
     ?>
 <p>Dades per la sessió <?php print  $_GET['rndk']?></p>
+<div id="chart_div"></div>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+ google.charts.load('current', {'packages':['line', 'corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+      var jsonData = jQuery.ajax({
+          url: "admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=<?php print $_GET['rndk']?>",
+          dataType: "json",
+          async: false
+          }).responseText;
+
+
+      var button = document.getElementById('change-chart');
+      var chartDiv = document.getElementById('chart_div');
+
+     
+
+      var data = new google.visualization.DataTable(jsonData);
+     
+      //data.addColumn('number', "Header");
+       //data.addColumn('date', 'Time');
+     // data.addColumn('number', "Average Hours of Daylight");
+
+      //data.addRows();
+
+      var materialOptions = {
+        chart: {
+          title: 'Blah blah'
+        },
+        width: 900,
+        height: 500,
+        series: {
+          // Gives each series an axis name that matches the Y-axis below.
+          0: {axis: 'Temps'},
+          1: {axis: 'Daylight'}
+        },
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names.
+          y: {
+            Temps: {label: 'Time'},
+            Daylight: {label: 'Daylight'}
+          }
+        }
+      };
+
+      var classicOptions = {
+        title: 'Average Temperatures and Daylight in Iceland Throughout the Year',
+        width: 900,
+        height: 500,
+        // Gives each series an axis that matches the vAxes number below.
+        series: {
+          0: {targetAxisIndex: 0}
+         // 1: {targetAxisIndex: 1}
+        },
+        vAxes: {
+          // Adds titles to each axis.
+          0: {title: 'Temps (Celsius)'},
+          1: {title: 'Daylight'}
+        },
+       /*
+        hAxis: {
+          ticks: [new Date(2014, 0), new Date(2014, 1), new Date(2014, 2), new Date(2014, 3),
+                  new Date(2014, 4),  new Date(2014, 5), new Date(2014, 6), new Date(2014, 7),
+                  new Date(2014, 8), new Date(2014, 9), new Date(2014, 10), new Date(2014, 11)
+                 ]
+        },*/
+        vAxis: {
+          viewWindow: {
+            max: 30
+          }
+        }
+      };
+
+      
+
+      function drawMaterialChart() {
+        var materialChart = new google.charts.Line(chartDiv);
+        materialChart.draw(data, materialOptions);
+        //button.innerText = 'Change to Classic';
+      //  button.onclick = drawClassicChart;
+      }
+
+      function drawClassicChart() {
+        var classicChart = new google.visualization.LineChart(chartDiv);
+        classicChart.draw(data, classicOptions);
+       // button.innerText = 'Change to Material';
+       // button.onclick = drawMaterialChart;
+      }
+
+      drawMaterialChart();
+
+    }
+    </script>
 
   <?php
  
@@ -147,6 +246,73 @@ function my_plugin_options(){
 ?>
   </div>
   <?php
+}
+
+
+/** crides ajax 
+
+totes es fan a la url
+http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin-ajax.php?action=videoanalytics_do_ajax_request
+
+
+ admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=0.6015316601842642
+*/
+
+add_action( 'wp_ajax_videoanalytics_do_ajax_request', 'videoanalytics_do_ajax_request' );
+add_action( 'wp_ajax_nopriv_videoanalytics_do_ajax_request', 'videoanalytics_do_ajax_request' );
+
+function videoanalytics_do_ajax_request(){
+ 
+  $data=va_session_get($_GET['rndk']);
+?>
+  {"cols":[
+
+{"id":"","label":"Header","pattern":"","type":"number"},
+{"id":"","label":"Time","pattern":"","type":"date"}
+
+],"rows":[
+
+<?php
+foreach($data as $d):
+
+  $ts=(new DateTime($d->ta))->getTimestamp();
+
+$date=date_create();
+date_timestamp_set($date, $ts);
+ //echo date_format($date, 'U = Y-m-d H:i:s') . "\n";
+
+?>
+{"c":[{"v":<?php print $d->params?>},{"v":"Date( <?php print date_format($date,"Y,m,d,H,i,s") ?>)"}]},
+
+
+
+<?php
+  //todo si es el final afegir
+  if($d->act=="pausa"){
+   
+    //print "Ole".intVal($d->params);
+    //$date2=date_add($date, date_interval_create_from_date_string('+'.intVal($d->params).' seconds'));
+    $ts2=$ts+intVal($d->params);
+    //print "ts2: ".$ts2." ts: ".$ts." dif: ".($ts2-$ts);
+    $date2=date_create();
+date_timestamp_set($date2, $ts);
+  // $date2=$date->add(new DateInterval('PT'.$d->params.'S'));
+//todo no suma be els segons
+?>
+{"i":"blah","c":[{"v":0},{"v":"Date( <?php print date_format($date2,"Y,m,d,H,i,s") ?>)"}]},
+
+
+<?php
+  }
+
+
+endforeach;
+?>
+
+]}
+<?php
+ 
+  exit();
 }
 
 /*

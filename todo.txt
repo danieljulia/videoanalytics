@@ -1,6 +1,17 @@
 todo.txt
 
+- preprocessar la gràfica, per exemple
 
+http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin.php?page=videoanalytics&rndk=0.47796850418671966
+
+
+- crida a vimeo per saber longitud video
+- fer gràfica bé
+- feedback cesar
+
+
+fet
+----
 - gràfica previa, exemple http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin.php?page=videoanalytics&rndk=0.6015316601842642
 reflexionar sobre la gràfica,
 
@@ -8,7 +19,3 @@ x capçal de video
 y temps
 
 fer una provar amb google graph
-
-- crida a vimeo per saber longitud video
-- fer gràfica bé
-- feedback cesar
