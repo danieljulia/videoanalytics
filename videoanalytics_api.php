@@ -1,12 +1,15 @@
 <?php
 
-/* retorna un llistat amb les sessions disponibles */
+/**
+ retorna un llistat amb les sessions disponibles
+ */
 
 function va_get_sessions(){
 
 	global $wpdb; 
+  	$table_name = $wpdb->prefix . "videoanalytics";
 
-    $sql="SELECT * FROM videoanalytics group by rndk order by ti desc";
+    $sql="SELECT *,count(*) as t FROM $table_name group by rndk order by ti desc";
 
     $posts = $wpdb->get_results($sql);
     return $posts;
@@ -14,14 +17,60 @@ function va_get_sessions(){
 
 }
 
-/* retorna les dades d'una sessió en concret */
+/**
+retorna les dades d'una sessió en concret
+*/
 
 
-function va_session_get($session_id){
-	global $wpdb; 
+function va_session_get($session_id,$track=""){
+  global $wpdb; 
+  $table_name = $wpdb->prefix . "videoanalytics";
 
-    $sql="SELECT * FROM videoanalytics where rndk=".$session_id." order by ta asc";
+    $sql="SELECT * FROM $table_name where rndk=".$session_id;
+    if($track!="") $sql.=" and video='$track' ";
+    $sql.=" order by ta asc";
 
     $posts = $wpdb->get_results($sql);
     return $posts;
+}
+
+
+/**
+demanar durada video a vimeo 
+*/
+
+
+//test 
+//$duration=videoanalytics_get_duration('06507_m2_exercici6');
+//print "duration : ".$duration;
+
+function videoanalytics_get_duration($video_name){
+  global $wpdb;
+  //primer mirar si existeix a la base de dades
+  $table_name = $wpdb->prefix . "videoanalytics_video";
+  $query="SELECT * FROM $table_name WHERE video='".$video_name."'";
+  $results=$wpdb->get_results($query);
+
+  if(count($results)>0){
+
+    return $results[0]->duration;
+
+  }
+  
+
+  //en cas contrari demanar a vimeo i guardar resultat
+  //com sembla que no es pot demanar a vimeo s'estima amb aquesta query
+  $table_name_main = $wpdb->prefix . "videoanalytics";
+   $query="SELECT * FROM $table_name_main WHERE video='".$video_name."' and act='pausa' order by params desc";
+   $results=$wpdb->get_results($query);
+  
+   if(count($results)>0){
+    $timestamp = date('Y-m-d G:i:s');
+    $duration=$results[0]->params;
+    $query="INSERT INTO $table_name (video,duration,updated) values ('$video_name',$duration, '$timestamp')";
+    
+    $wpdb->query($query);
+
+   }
+
 }

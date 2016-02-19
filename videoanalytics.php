@@ -9,10 +9,13 @@ Author URI: http://www.pimpampum.net
 License: License: GPLv2
 */
 
+
+
 require "videoanalytics_api.php";
 
 add_action( 'admin_init', 'videoanalytics_options_init' );
 add_action( 'admin_menu', 'videoanalytics_options_add_page' ); 
+
 
 
 /* registrar les opcions del plugin */
@@ -106,21 +109,22 @@ function my_plugin_options(){
   <?php
 
   if(isset($_GET['rndk'])){
-
-   
     $data=va_session_get($_GET['rndk']);
-    ?>
-<p>Dades per la sessió <?php print  $_GET['rndk']?></p>
+  ?>
+
+<p><?php print __("Dades per la sessió","videoanalytics")?> <?php print  $_GET['rndk']?></p>
 <div id="chart_div"></div>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
  google.charts.load('current', {'packages':['line', 'corechart']});
       google.charts.setOnLoadCallback(drawChart);
+    var track="";//06507_m2_exercici_32";
 
     function drawChart() {
-
+      
+      if(track==null) track="";
       var jsonData = jQuery.ajax({
-          url: "admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=<?php print $_GET['rndk']?>",
+          url: "admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=<?php print $_GET['rndk']?>&track="+track,
           dataType: "json",
           async: false
           }).responseText;
@@ -141,7 +145,7 @@ function my_plugin_options(){
 
       var materialOptions = {
         chart: {
-          title: 'Blah blah'
+          title: 'Evolució'
         },
         width: 900,
         height: 500,
@@ -203,21 +207,47 @@ function my_plugin_options(){
        // button.onclick = drawMaterialChart;
       }
 
+     
       drawMaterialChart();
 
     }
+     function drawChunk(t){
+        track=t;
+        drawChart();
+        return false;
+      }
+
     </script>
 
   <?php
+  $videos=[];
+  $last_video="";
  
+foreach ($data as $post)
+    {
+        if( !in_array($post->video,$videos) ){
+          $videos[]=$post->video;
+        }
+ 
+    }?>
 
+    <nav class="tracks"><a href='#' onclick='drawChunk("")'>All</a> 
+    <?php
+foreach($videos as $video){
+      print "<a  onclick='drawChunk(\"".$video."\")'>".$video."</a> ";
+    }
+    ?>
+    </nav>
+    <?php
     print("<ul>");
     foreach ($data as $post)
     {
+        
         print('<li>'.$post->video.'|'.$post->ta.'|'.$post->act.'|'.$post->params.'</a>');
          print('</li>');
     }
     print("</ul>");
+    
     
 
   }else{
@@ -225,7 +255,8 @@ function my_plugin_options(){
   ?>
 
  
-  <p>List available stats</p>
+  <h2><?php echo __("Sessions","videoanalytics")?> </h2>
+  <h3>rndk [data] / canvis</h3>
 
   <?php
   $sessions=va_get_sessions();
@@ -233,13 +264,14 @@ function my_plugin_options(){
     print("<ul>");
     foreach ($sessions as $post)
     {
-        print('<li><a href="?page=videoanalytics&rndk='.$post->rndk.'">'.$post->rndk.'|'.$post->video.'</a>');
+        print('<li><a href="?page=videoanalytics&rndk='.$post->rndk.'">'.$post->rndk.' ['.$post->ti.']  / '.$post->t.'</a>');
+        //'|'.$post->video.'
          print('</li>');
     }
     print("</ul>");
     ?>
 
-  <a target="newsletter" href="<?php print bloginfo("wpurl")?>/mailchimp-template"><?php print __("View","mt")?></a>
+
 
   <?php
 }
@@ -262,8 +294,14 @@ add_action( 'wp_ajax_videoanalytics_do_ajax_request', 'videoanalytics_do_ajax_re
 add_action( 'wp_ajax_nopriv_videoanalytics_do_ajax_request', 'videoanalytics_do_ajax_request' );
 
 function videoanalytics_do_ajax_request(){
- 
-  $data=va_session_get($_GET['rndk']);
+ $track="";
+  if(isset($_GET['track'])){
+    $track=$_GET['track'];
+
+  }
+
+  $data=va_session_get($_GET['rndk'],$track);
+
 ?>
   {"cols":[
 
@@ -273,6 +311,9 @@ function videoanalytics_do_ajax_request(){
 ],"rows":[
 
 <?php
+$c=0;
+$total=count($data);
+
 foreach($data as $d):
 
   $ts=(new DateTime($d->ta))->getTimestamp();
@@ -289,23 +330,48 @@ date_timestamp_set($date, $ts);
 <?php
   //todo si es el final afegir
   if($d->act=="pausa"){
+
+    //si el seguent torna a ser un play del mateix video...
+    if($c<$total-1){
+      if($data[$c+1]->act=="play" && $data[$c+1]->video==$data[$c]->video){
+            
+            
+            $ts2=$data[$c+1]->params;
+         
+            $date2=date_create();
+            date_timestamp_set($date2, $ts);
+             
+            ?>
+            {"i":"blah","c":[{"v":<?php print $d->params?>},{"v":"Date( <?php print date_format($date2,"Y,m,d,H,i,s") ?>)"}]},
+
+
+            <?php
+
+
+      }else{
+
+            //print "Ole".intVal($d->params);
+            //$date2=date_add($date, date_interval_create_from_date_string('+'.intVal($d->params).' seconds'));
+            $ts2=$ts+intVal($d->params);
+            //print "ts2: ".$ts2." ts: ".$ts." dif: ".($ts2-$ts);
+            $date2=date_create();
+            date_timestamp_set($date2, $ts);
+              // $date2=$date->add(new DateInterval('PT'.$d->params.'S'));
+            //todo no suma be els segons
+            ?>
+            {"i":"blah","color":"#ff0000","c":[{"v":0},{"v":"Date( <?php print date_format($date2,"Y,m,d,H,i,s") ?>)"}]},
+
+
+            <?php
+
+
+      }
+    }
    
-    //print "Ole".intVal($d->params);
-    //$date2=date_add($date, date_interval_create_from_date_string('+'.intVal($d->params).' seconds'));
-    $ts2=$ts+intVal($d->params);
-    //print "ts2: ".$ts2." ts: ".$ts." dif: ".($ts2-$ts);
-    $date2=date_create();
-date_timestamp_set($date2, $ts);
-  // $date2=$date->add(new DateInterval('PT'.$d->params.'S'));
-//todo no suma be els segons
-?>
-{"i":"blah","c":[{"v":0},{"v":"Date( <?php print date_format($date2,"Y,m,d,H,i,s") ?>)"}]},
 
-
-<?php
   }
 
-
+$c++;
 endforeach;
 ?>
 
@@ -356,3 +422,32 @@ if(count($url2)>1){
 });
 */
 
+
+/**
+crear taula al activar el plugin
+*/
+
+function videoanalytics_video_install(){
+  global $wpdb;
+
+  $charset_collate = $wpdb->get_charset_collate();
+     $table_name = $wpdb->prefix . "videoanalytics_video"; 
+
+
+  $sql="CREATE TABLE IF NOT EXISTS $table_name (
+    id int(11) NOT NULL AUTO_INCREMENT,
+    video varchar(256) NOT NULL,
+    duration float NOT NULL,
+    updated timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY (id)
+  ) $charset_collate ;";
+
+  require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+  dbDelta( $sql );
+
+  //marcar versió
+  add_option( "videoanalytics_video", "1.0" );
+}
+
+
+register_activation_hook( __FILE__, 'videoanalytics_video_install' );

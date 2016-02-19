@@ -1,5 +1,34 @@
 todo.txt
 
+- poder extreure dades per un video o un periode de temps determinat
+- exportar aquestes dades a json
+- poder exportar la imatge
+- visualitzar-ho en un canvas
+
+
+
+
+
+fet
+----
+
++ mirar si es poden fer diferents series amb diferents colors
+ * no es facil fer-ho amb google charts
+- visualitzar si s'ha arribat al final o no
+
++ deixar-ho visible i enviar-ho a cesar
+  * primera versió
+
+
+- gràfica previa, exemple http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin.php?page=videoanalytics&rndk=0.6015316601842642
+reflexionar sobre la gràfica,
+
+x capçal de video
+y temps
+
+fer una provar amb google graph
+
+
 - preprocessar la gràfica, per exemple
 
 http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin.php?page=videoanalytics&rndk=0.47796850418671966
@@ -9,13 +38,17 @@ http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin.php
 - fer gràfica bé
 - feedback cesar
 
-
-fet
+exemples interessants
 ----
-- gràfica previa, exemple http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin.php?page=videoanalytics&rndk=0.6015316601842642
-reflexionar sobre la gràfica,
 
-x capçal de video
-y temps
+ play i pausa varies vegades
+ 
+http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin.php?page=videoanalytics&rndk=0.09441399085335433
 
-fer una provar amb google graph
+
+apunts
+----
+
+- no es pot demanar longitud del video perquè no tenim el codi del video sino el nom,
+he fet una estimació cercant la reproducció més llarga que s'ha fet
+- 
