@@ -1,9 +1,30 @@
 todo.txt
 
-- poder extreure dades per un video o un periode de temps determinat
-- exportar aquestes dades a json
 - poder exportar la imatge
-- visualitzar-ho en un canvas
+- Millorar la visualització
+(és especialment caòtic quan hi ha moltes sessions i la linia no segueix com hauria segons el document de referència que em vas passar)
+- Poder filtrar també per dates
+- Creus que val la pena conservar el llistat de sessions ? (ho canviaria a la visualització vis.js)
+
+
+
+- poder extreure dades per un video o un periode de temps determinat
+	- getvideos
+		retorna la llista de tots els videos
+	- getvideo
+		retorna totes les sessions d'un video determinat
+	- getsessions
+		retorna una llista amb totes les sessions
+	- getsession
+		retorna la informació d'una sessió determinada
+	- getperiod
+		retorna totes les sessions en un periode determinat
+
+		
+- exportar aquestes dades a json
+
+- visualitzar-ho en un canvas o svg
+http://gionkunz.github.io/chartist-js/
 
 
 

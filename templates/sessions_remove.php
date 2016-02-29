@@ -1,45 +1,42 @@
-<!--
-http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-content/plugins/videoanalytics/tests/line_graph.html
+<?php
+if(isset($_GET['rndk'])){
+    $data=va_session_get($_GET['rndk']);
+  ?>
 
--->
-
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-</head>
-<body>
-
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<button id="change-chart">Change to Classic</button>
-<br><br>
+<p><?php print __("Dades per la sessió","videoanalytics")?> <?php print  $_GET['rndk']?></p>
 <div id="chart_div"></div>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
  google.charts.load('current', {'packages':['line', 'corechart']});
       google.charts.setOnLoadCallback(drawChart);
+    var track="";//06507_m2_exercici_32";
 
     function drawChart() {
+      
+      if(track==null) track="";
+      var jsonData = jQuery.ajax({
+          url: "admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=<?php print $_GET['rndk']?>&track="+track,
+          dataType: "json",
+          async: false
+          }).responseText;
+
 
       var button = document.getElementById('change-chart');
       var chartDiv = document.getElementById('chart_div');
 
-      var data = new google.visualization.DataTable();
-      data.addColumn('date', 'Month');
-      data.addColumn('number', "Average Temperature");
+     
+
+      var data = new google.visualization.DataTable(jsonData);
+     
+      //data.addColumn('number', "Header");
+       //data.addColumn('date', 'Time');
      // data.addColumn('number', "Average Hours of Daylight");
 
-      data.addRows([
-        [new Date(2014, 0,1,12,12,12,0),  -.5],
-         [new Date(2014, 0,1,12,12,13,0),  -.5],
-        [new Date(2014, 0,1,12,12,22,0),   5],
-        [new Date(2014, 0,1,12,12,32,0),   8],
-   		[new Date(2014, 0,1,12,12,35,0),   8],
-   		[new Date(2014, 0,1,12,12,45,0),   3],
-      ]);
+      //data.addRows();
 
       var materialOptions = {
         chart: {
-          title: 'Average Temperatures and Daylight in Iceland Throughout the Year'
+          title: 'Evolució'
         },
         width: 900,
         height: 500,
@@ -51,7 +48,7 @@ http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-content/plugins
         axes: {
           // Adds labels to each axis; they don't have to match the axis names.
           y: {
-            Temps: {label: 'Temps (Celsius)'},
+            Temps: {label: 'Time'},
             Daylight: {label: 'Daylight'}
           }
         }
@@ -85,24 +82,61 @@ http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-content/plugins
         }
       };
 
+      
+
       function drawMaterialChart() {
         var materialChart = new google.charts.Line(chartDiv);
         materialChart.draw(data, materialOptions);
-        button.innerText = 'Change to Classic';
-        button.onclick = drawClassicChart;
+        //button.innerText = 'Change to Classic';
+      //  button.onclick = drawClassicChart;
       }
 
       function drawClassicChart() {
         var classicChart = new google.visualization.LineChart(chartDiv);
         classicChart.draw(data, classicOptions);
-        button.innerText = 'Change to Material';
-        button.onclick = drawMaterialChart;
+       // button.innerText = 'Change to Material';
+       // button.onclick = drawMaterialChart;
       }
 
+     
       drawMaterialChart();
 
     }
+     function drawChunk(t){
+        track=t;
+        drawChart();
+        return false;
+      }
+
     </script>
 
-</body>
-</html>
+  <?php
+  $videos=[];
+  $last_video="";
+ 
+foreach ($data as $post)
+    {
+        if( !in_array($post->video,$videos) ){
+          $videos[]=$post->video;
+        }
+ 
+    }?>
+
+    <nav class="tracks"><a href='#' onclick='drawChunk("")'>All</a> 
+    <?php
+foreach($videos as $video){
+      print "<a  onclick='drawChunk(\"".$video."\")'>".$video."</a> ";
+    }
+    ?>
+    </nav>
+    <?php
+    print("<ul>");
+    foreach ($data as $post)
+    {
+        
+        print('<li>'.$post->video.'|'.$post->ta.'|'.$post->act.'|'.$post->params.'</a>');
+         print('</li>');
+    }
+    print("</ul>");
+    
+    

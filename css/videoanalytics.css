@@ -1,0 +1,19 @@
+ul.videoanalytics-menu{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.videoanalytics-menu li{
+	float:left;
+}
+
+ul.videoanalytics-menu  li a {
+ display: block;
+    padding: 8px;
+    background-color: #dddddd;
+}
+
+.wrap{
+	clear:both;
+}

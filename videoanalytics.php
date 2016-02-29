@@ -17,6 +17,25 @@ add_action( 'admin_init', 'videoanalytics_options_init' );
 add_action( 'admin_menu', 'videoanalytics_options_add_page' ); 
 
 
+function videoanalytics__adding_scripts() {
+  wp_register_script('vis', plugin_dir_url( __FILE__ ) . '/vis/vis.min.js');
+  wp_enqueue_script('vis');
+
+  wp_enqueue_style(
+    'viscss',
+    plugin_dir_url( __FILE__ )  . '/vis/vis.css'
+);
+   wp_enqueue_style(
+    'videoanalytics',
+    plugin_dir_url( __FILE__ )  . '/css/videoanalytics.css'
+);
+
+}
+
+ 
+add_action( 'admin_enqueue_scripts', 'videoanalytics__adding_scripts' );
+
+
 
 /* registrar les opcions del plugin */
 function videoanalytics_options_init(){
@@ -105,177 +124,49 @@ function my_plugin_options(){
 
 ?>
   <div class="wrap">
-   <h1>Video analytics</h1>
+  <nav>
+  <ul class="videoanalytics-menu">
+   <li><a href="admin.php?page=videoanalytics&option=main">Main</a></li> 
+   <li><a href="admin.php?page=videoanalytics&option=sessions">Sessions</a></li> 
+   <li><a href="admin.php?page=videoanalytics&option=videos">Videos</a></li> 
+  </ul>
+  </nav>
+</div>
+<div class="wrap">
+ <h2>Video analytics</h2>
   <?php
 
-  if(isset($_GET['rndk'])){
-    $data=va_session_get($_GET['rndk']);
+  $option="main";
+  if(isset($_GET['option'])){
+    $option=$_GET['option'];
+  }
+
+
+
+  switch($option){
+      case "main":
+        include "templates/main.php";
+        break;
+      case "sessions":
+        include "templates/sessions.php";
+        break;
+       case "session":
+        include "templates/session.php";
+        break;
+      case "videos":
+        include "templates/videos.php";
+        break;
+      case "sessions_videos":
+        include "templates/sessions_videos.php";
+        break;
+  }
+
+  
+
+  
   ?>
 
-<p><?php print __("Dades per la sessió","videoanalytics")?> <?php print  $_GET['rndk']?></p>
-<div id="chart_div"></div>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script>
- google.charts.load('current', {'packages':['line', 'corechart']});
-      google.charts.setOnLoadCallback(drawChart);
-    var track="";//06507_m2_exercici_32";
 
-    function drawChart() {
-      
-      if(track==null) track="";
-      var jsonData = jQuery.ajax({
-          url: "admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=<?php print $_GET['rndk']?>&track="+track,
-          dataType: "json",
-          async: false
-          }).responseText;
-
-
-      var button = document.getElementById('change-chart');
-      var chartDiv = document.getElementById('chart_div');
-
-     
-
-      var data = new google.visualization.DataTable(jsonData);
-     
-      //data.addColumn('number', "Header");
-       //data.addColumn('date', 'Time');
-     // data.addColumn('number', "Average Hours of Daylight");
-
-      //data.addRows();
-
-      var materialOptions = {
-        chart: {
-          title: 'Evolució'
-        },
-        width: 900,
-        height: 500,
-        series: {
-          // Gives each series an axis name that matches the Y-axis below.
-          0: {axis: 'Temps'},
-          1: {axis: 'Daylight'}
-        },
-        axes: {
-          // Adds labels to each axis; they don't have to match the axis names.
-          y: {
-            Temps: {label: 'Time'},
-            Daylight: {label: 'Daylight'}
-          }
-        }
-      };
-
-      var classicOptions = {
-        title: 'Average Temperatures and Daylight in Iceland Throughout the Year',
-        width: 900,
-        height: 500,
-        // Gives each series an axis that matches the vAxes number below.
-        series: {
-          0: {targetAxisIndex: 0}
-         // 1: {targetAxisIndex: 1}
-        },
-        vAxes: {
-          // Adds titles to each axis.
-          0: {title: 'Temps (Celsius)'},
-          1: {title: 'Daylight'}
-        },
-       /*
-        hAxis: {
-          ticks: [new Date(2014, 0), new Date(2014, 1), new Date(2014, 2), new Date(2014, 3),
-                  new Date(2014, 4),  new Date(2014, 5), new Date(2014, 6), new Date(2014, 7),
-                  new Date(2014, 8), new Date(2014, 9), new Date(2014, 10), new Date(2014, 11)
-                 ]
-        },*/
-        vAxis: {
-          viewWindow: {
-            max: 30
-          }
-        }
-      };
-
-      
-
-      function drawMaterialChart() {
-        var materialChart = new google.charts.Line(chartDiv);
-        materialChart.draw(data, materialOptions);
-        //button.innerText = 'Change to Classic';
-      //  button.onclick = drawClassicChart;
-      }
-
-      function drawClassicChart() {
-        var classicChart = new google.visualization.LineChart(chartDiv);
-        classicChart.draw(data, classicOptions);
-       // button.innerText = 'Change to Material';
-       // button.onclick = drawMaterialChart;
-      }
-
-     
-      drawMaterialChart();
-
-    }
-     function drawChunk(t){
-        track=t;
-        drawChart();
-        return false;
-      }
-
-    </script>
-
-  <?php
-  $videos=[];
-  $last_video="";
- 
-foreach ($data as $post)
-    {
-        if( !in_array($post->video,$videos) ){
-          $videos[]=$post->video;
-        }
- 
-    }?>
-
-    <nav class="tracks"><a href='#' onclick='drawChunk("")'>All</a> 
-    <?php
-foreach($videos as $video){
-      print "<a  onclick='drawChunk(\"".$video."\")'>".$video."</a> ";
-    }
-    ?>
-    </nav>
-    <?php
-    print("<ul>");
-    foreach ($data as $post)
-    {
-        
-        print('<li>'.$post->video.'|'.$post->ta.'|'.$post->act.'|'.$post->params.'</a>');
-         print('</li>');
-    }
-    print("</ul>");
-    
-    
-
-  }else{
-
-  ?>
-
- 
-  <h2><?php echo __("Sessions","videoanalytics")?> </h2>
-  <h3>rndk [data] / canvis</h3>
-
-  <?php
-  $sessions=va_get_sessions();
-
-    print("<ul>");
-    foreach ($sessions as $post)
-    {
-        print('<li><a href="?page=videoanalytics&rndk='.$post->rndk.'">'.$post->rndk.' ['.$post->ti.']  / '.$post->t.'</a>');
-        //'|'.$post->video.'
-         print('</li>');
-    }
-    print("</ul>");
-    ?>
-
-
-
-  <?php
-}
-?>
   </div>
   <?php
 }
@@ -292,13 +183,45 @@ http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin-aja
 
 add_action( 'wp_ajax_videoanalytics_do_ajax_request', 'videoanalytics_do_ajax_request' );
 add_action( 'wp_ajax_nopriv_videoanalytics_do_ajax_request', 'videoanalytics_do_ajax_request' );
+add_action( 'wp_ajax_videoanalytics_api', 'videoanalytics_api' );
+add_action( 'wp_ajax_nopriv_videoanalytics_api', 'videoanalytics_api' );
+
+/**
+per testejar
+http://kiwoo.dev/videoanalytics/wordpress/wp-admin/admin-ajax.php?action=videoanalytics_api&method=sessions_video&video=06507_m2_exercici_11
+*/
+function videoanalytics_api(){
+  if(isset($_GET['method'])){
+    $method=$_GET['method'];
+  }
+  if(isset($_GET['download'])){ //forçar download
+    //todo mostrar info dades al json
+     header('Content-Disposition: attachment; filename="videoanalytics_data.json"');
+     
+  }
+
+  switch($method){
+      case "sessions_videos":
+        api("sessions_videos",array("video"=>$_GET['video']));
+        break;
+
+  }
+
+  
+  exit(); 
+
+
+}
+
 
 function videoanalytics_do_ajax_request(){
  $track="";
   if(isset($_GET['track'])){
     $track=$_GET['track'];
-
   }
+
+ 
+
 
   $data=va_session_get($_GET['rndk'],$track);
 
