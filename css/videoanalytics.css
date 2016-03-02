@@ -17,3 +17,13 @@ ul.videoanalytics-menu  li a {
 .wrap{
 	clear:both;
 }
+
+
+ul.log li.legend{
+	background-color: #aaa;
+	font-weight: bold;
+}
+
+ul.log li{
+	background-color: #eee;
+}

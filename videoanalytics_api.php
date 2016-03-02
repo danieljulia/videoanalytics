@@ -140,6 +140,7 @@ function videoanalytics_get_duration($video_name){
     $query="INSERT INTO $table_name (video,duration,updated) values ('$video_name',$duration, '$timestamp')";
     
     $wpdb->query($query);
+    return $duration;
 
    }
 
