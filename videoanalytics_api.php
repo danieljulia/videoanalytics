@@ -39,12 +39,14 @@ function va_session_get($session_id,$track=""){
  retorna un llistat amb tots els videos disponibles
  */
 
-function va_get_videos(){
+function va_get_videos($from="",$to=""){
 
   global $wpdb; 
   $table_name = $wpdb->prefix . "videoanalytics";
 
-  $sql="SELECT video,count(*) as t FROM $table_name group by video order by t desc";
+  if($from=="" && $to==""){
+    $sql="SELECT video,count(*) as t FROM $table_name group by video order by t desc";
+  }
   $posts = $wpdb->get_results($sql);
   return $posts;
 }
@@ -66,11 +68,6 @@ function va_get_sessions_video($video){
       //ta és el de l'acció      
       $p->ts= (new DateTime($p->ta))->getTimestamp();
 
-
-      
-
-
-
       unset($p->video);
       unset($p->ti);
       unset($p->ta);
@@ -81,6 +78,16 @@ function va_get_sessions_video($video){
 
 
 }
+
+/**
+retorna els limits temporals de la serie
+*/
+function va_get_dates(){
+
+
+
+  }
+
 
 //todo en un periode de temps
 

@@ -1,10 +1,16 @@
 todo.txt
 
-- poder exportar la imatge
-- Millorar la visualització
-(és especialment caòtic quan hi ha moltes sessions i la linia no segueix com hauria segons el document de referència que em vas passar)
-- Poder filtrar també per dates
-- Creus que val la pena conservar el llistat de sessions ? (ho canviaria a la visualització vis.js)
+- visualitzar pauses i fast forward rewind
+- rectificar les dades al servidor
+- estadistiques mitjanes
+- filtrar per temps
+(gràfica d’activitat per temps?)
+- convertir segons a temps al llistat,
+poder filtrar per una sessió? mostrar el color
+- json nom ok
+- enviar feedback
+- poder exportar en imatge
+http://stackoverflow.com/questions/18271898/html-and-svg-to-canvas-javascript
 
 
 

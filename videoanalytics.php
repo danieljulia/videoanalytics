@@ -30,6 +30,13 @@ function videoanalytics__adding_scripts() {
     plugin_dir_url( __FILE__ )  . '/css/videoanalytics.css'
 );
 
+ wp_register_script('html2canvas', plugin_dir_url( __FILE__ ) . '/js/html2canvas.min.js');
+wp_enqueue_script('html2canvas');
+
+ wp_register_script('html2canvassvg', plugin_dir_url( __FILE__ ) . '/js/html2canvas.svg.min.js');
+wp_enqueue_script('html2canvassvg');
+
+
 }
 
  
@@ -129,6 +136,7 @@ function my_plugin_options(){
    <li><a href="admin.php?page=videoanalytics&option=main">Main</a></li> 
    <li><a href="admin.php?page=videoanalytics&option=sessions">Sessions</a></li> 
    <li><a href="admin.php?page=videoanalytics&option=videos">Videos</a></li> 
+   <li><a href="admin.php?page=videoanalytics&option=dates">Dates</a></li> 
   </ul>
   </nav>
 </div>
@@ -159,6 +167,10 @@ function my_plugin_options(){
       case "sessions_videos":
         include "templates/sessions_videos.php";
         break;
+      case "dates":
+        include "templates/dates.php";
+        break;
+
   }
 
   
