@@ -36,6 +36,8 @@ wp_enqueue_script('html2canvas');
  wp_register_script('html2canvassvg', plugin_dir_url( __FILE__ ) . '/js/html2canvas.svg.min.js');
 wp_enqueue_script('html2canvassvg');
 
+ wp_register_script('canvg', plugin_dir_url( __FILE__ ) . '/js/canvg.js');
+wp_enqueue_script('canvg');
 
 }
 

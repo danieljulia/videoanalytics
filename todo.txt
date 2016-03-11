@@ -13,6 +13,22 @@ poder filtrar per una sessió? mostrar el color
 http://stackoverflow.com/questions/18271898/html-and-svg-to-canvas-javascript
 
 
+visualitzacio
+
+- provar amb aquests sistemes
+http://www.flotcharts.org/flot/examples/basic-usage/index.html
+primer de tot veure si exporta a imatge
+
+com imprimir
+http://stackoverflow.com/questions/9693163/saving-flot-chart-to-image-or-pdf
+
+
+o aquest
+
+http://www.jscharts.com/how-to-use
+
+
+
 
 - poder extreure dades per un video o un periode de temps determinat
 	- getvideos
