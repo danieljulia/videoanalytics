@@ -18,26 +18,19 @@ add_action( 'admin_menu', 'videoanalytics_options_add_page' );
 
 
 function videoanalytics__adding_scripts() {
-  wp_register_script('vis', plugin_dir_url( __FILE__ ) . '/vis/vis.min.js');
-  wp_enqueue_script('vis');
-
-  wp_enqueue_style(
-    'viscss',
-    plugin_dir_url( __FILE__ )  . '/vis/vis.css'
-);
-   wp_enqueue_style(
+     wp_enqueue_style(
     'videoanalytics',
     plugin_dir_url( __FILE__ )  . '/css/videoanalytics.css'
 );
 
- wp_register_script('html2canvas', plugin_dir_url( __FILE__ ) . '/js/html2canvas.min.js');
-wp_enqueue_script('html2canvas');
+  wp_register_script('flot', plugin_dir_url( __FILE__ ) . '/js/jquery.flot.js');
+  wp_enqueue_script('flot');
 
- wp_register_script('html2canvassvg', plugin_dir_url( __FILE__ ) . '/js/html2canvas.svg.min.js');
-wp_enqueue_script('html2canvassvg');
+  wp_register_script('canvasflot', plugin_dir_url( __FILE__ ) . '/js/jquery.flot.canvas.js');
+  wp_enqueue_script('canvasflot');
 
- wp_register_script('canvg', plugin_dir_url( __FILE__ ) . '/js/canvg.js');
-wp_enqueue_script('canvg');
+  wp_register_script('timeflot', plugin_dir_url( __FILE__ ) . '/js/jquery.flot.time.js');
+  wp_enqueue_script('timeflot');
 
 }
 

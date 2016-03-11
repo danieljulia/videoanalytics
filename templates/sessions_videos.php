@@ -12,7 +12,12 @@ $duration=videoanalytics_get_duration($video);
  print $duration ?> s.
 <span class="more-info"></span></p>
 
-<div id="visualization"></div>
+
+<div class="vis-container">
+      <div class="vis-placeholder"></div>
+    </div>
+  
+<a id="dl" download="Canvas.png" href="#">Download Image</a>
 
 <p><a href="<?php print $url."&download"?>"><?php _e("Download data")?></a>
 </p>
@@ -22,22 +27,18 @@ Log:
 </ul>
 </div>
 <script type="text/javascript">
-/**
 
-tema de grups
-
-*/
-  var container = document.getElementById('visualization');
-  
- 
-  var video="<?php print $_GET['video']?>";
-
+//variables globals
   var compta_desfase=true;
+  var data_vis=[];
+  var pausa=[];
+  var ff=[];
+  var rw=[];
 
+  var ctx;
 
  jQuery(document).ready(function(){
     jQuery.getJSON('<?php print $url?>',function(data){
-        
         init(data);
     });
   });
@@ -50,10 +51,8 @@ tema de grups
     var desfase=0;
     var l=data.length;
     var txt="";
-    
-    var pausa=[];
-    var ff=[];
-    var rw=[];
+    var data_g=[];
+   
 
     for(var i=0;i<l;i++){
       var d=data[i];
@@ -62,10 +61,14 @@ tema de grups
         dt=d.ts;
         last=d.rndk;
         group++;
+        data_vis.push(data_g);
+        data_g=[]
+        //todo cal afegir l'ultim correctament!
         txt+="<li class='legend'>Session "+group+"</li>";
       }
       
-      items.push({y:d.ts-dt-desfase,x:parseFloat(d.params),group:group});
+     // items.push({y:d.ts-dt-desfase,x:parseFloat(d.params),group:group});
+     data_g.push([parseFloat(d.params),d.ts-dt-desfase]);
 
       txt+="<li>"+d.act+" "+(d.ts-dt)+" "+d.params;
       if(desfase>0) txt+=" pausa acumulada: "+desfase;
@@ -81,7 +84,8 @@ tema de grups
 
                 if(d.act=="pausa"){
                   if(next_status="buscado" || next_status=="pausa"){
-                        items.push({y:d.ts-dt,x:0,group:group});
+                        //items.push({y:d.ts-dt,x:0,group:group});
+                        data_g.push([0,d.ts-dt]);
                         if(compta_desfase){
                           desfase+=data[i+1].ts-d.ts;
                         }
@@ -110,119 +114,95 @@ tema de grups
 
                           
                         
-                      
+                          
+                  }
                   }
                   
-                }
+                
+   }
+  
+          }else{
 
-
+            if(i==l-1){
+              data_vis.push(data_g);
+             //afegit ultim tros
             }
-        
+          
           }
-           
-
-        
-
-      
-      
-    }
+          
+       
+      }
+               
 
     console.log("rewinds i fastforwards",rw,ff);
 
     jQuery("ul.log").html(txt);
     jQuery(".more-info").html(group+" sessions");
-    console.log(items);
-
-    var has_legend=true;
-    if(group>10) has_legend=false;
    
-    var dataset = new vis.DataSet(items);
-    var options = {
-        legend: has_legend,
-        sort: false,
-        defaultGroup: 'session',
-        interpolation:false,
-        zoomable:false,
-        groups:{
-          1:{color:{background:'red'}},
-          2:{color:{background:'red'}},
-          3:{color:{background:'red'}}
-
-        }
-        //graphHeight: '1500px',
-       // height: '500px',
-       // start: '2014-06-10',
-       // end: '2014-06-18'
-    };
-    var graph2d = new vis.Graph2d(container, dataset, options);
+    doVis();
+          
+   
 }
 
+
+
+
+function doVis(){
+
+
+
+    //veure exemple view-source:http://www.flotcharts.org/flot/examples/canvas/
+
+    var options = {
+      canvas: true
+      //xaxes: [ { mode: "time" } ],
+      /*yaxes: [ { min: 0 }, {
+        position: "right",
+        alignTicksWithAxis: 1,
+        tickFormatter: function(value, axis) {
+          return value.toFixed(axis.tickDecimals) + "€";
+        }
+      } ]*/,
+      lines:{show:true},
+      points:{show:true},
+      legend: { position: "sw" }
+    }
+
+
+   var plot=jQuery.plot(".vis-placeholder",
+      data_vis,
+      options);
+
+    /*
+    var plot=jQuery.plot(".vis-placeholder",
+      [{data:data_vis,lines:{show:true},canvas:true}],
+      options);
+  */
+    ctx = plot.getCanvas();
+
+    // Add the Flot version string to the footer
+
+    jQuery("#footer").prepend("Flot " + jQuery.plot.version + " &ndash; ");
+}
 
 
 //todo canviar de localitzacio
 
-function exportImage(){
-  //find all svg elements in $container
-  //$container is the jQuery object of the div that you need to convert to image. This div may contain highcharts along with other child divs, etc
 
 
+function dlCanvas() {
+  var dt = ctx.toDataURL('image/png');
+  /* Change MIME type to trick the browser to downlaod the file instead of displaying it */
+  dt = dt.replace(/^data:image\/[^;]*/, 'data:application/octet-stream');
+
+  var id="<?php print $video?>";
 
 
-  container=jQuery('#visualization');
-  //container=jQuery('.vis-content');
+ jQuery('#dl').attr('download','videoanalytics_'+id+'.png');
+   /* In addition to <a>'s "download" attribute, you can define HTTP-style headers */
+  dt = dt.replace(/^data:application\/octet-stream/, 'data:application/octet-stream;headers=Content-Disposition%3A%20attachment%3B%20filename=videoanalytics'+id+'.png');
+  this.href = dt;
+};
+document.getElementById("dl").addEventListener('click', dlCanvas, false);
 
-  var svgElements= container.find('svg');
-var canvas, xml;
-
-console.log("svg elements ",svgElements);
-
-  //replace all svgs with a temp canvas
-  var c=0;
-  svgElements.each(function () {
-      if(c==0) {
-      
-
-      canvas = document.createElement("canvas");
-      canvas.className = "screenShotTempCanvas";
-      //convert SVG into a XML string
-      xml = (new XMLSerializer()).serializeToString(this);
-
-      // Removing the name space as IE throws an error
-      xml = xml.replace(/xmlns=\"http:\/\/www\.w3\.org\/2000\/svg\"/, '');
-
-
-      //draw the SVG onto a canvas
-      canvg(canvas, xml);
-      
-
-   
-     
-
-      jQuery(canvas).insertAfter(this);
-    return;
-      console.log("ja he inserit el canvas",canvas);
-      //hide the SVG element
-      this.className = "tempHide";
-      jQuery(this).hide();
-    }
-      c++;
-
-  });
-
-
-  //...
-  // HTML2CANVAS SCREENSHOT
-  //...
-html2canvas(container, {
-  onrendered: function(canvas) {
-    document.body.appendChild(canvas);
-  }
-});
-
-
-  //After your image is generated revert the temporary changes
-  container.find('.screenShotTempCanvas').remove();
- container.find('.tempHide').show().removeClass('tempHide');
-
-}
 </script>
