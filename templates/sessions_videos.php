@@ -34,8 +34,9 @@ Log:
   var pausa=[];
   var ff=[];
   var rw=[];
-
+ var punts=[];
   var ctx;
+  var duration=<?php print intval($duration) ?>;
 
  jQuery(document).ready(function(){
     jQuery.getJSON('<?php print $url?>',function(data){
@@ -54,6 +55,7 @@ Log:
     var data_g=[];
    
 
+
     for(var i=0;i<l;i++){
       var d=data[i];
       if(d.rndk!=last){
@@ -62,13 +64,13 @@ Log:
         last=d.rndk;
         group++;
         data_vis.push(data_g);
-        data_g=[]
+        data_g={label:group,data:[]}; //color?
         //todo cal afegir l'ultim correctament!
         txt+="<li class='legend'>Session "+group+"</li>";
       }
       
      // items.push({y:d.ts-dt-desfase,x:parseFloat(d.params),group:group});
-     data_g.push([parseFloat(d.params),d.ts-dt-desfase]);
+     data_g.data.push([parseFloat(d.params),d.ts-dt-desfase]);
 
       txt+="<li>"+d.act+" "+(d.ts-dt)+" "+d.params;
       if(desfase>0) txt+=" pausa acumulada: "+desfase;
@@ -82,10 +84,26 @@ Log:
  
                 var next_status=data[i+1].act;
 
-                if(d.act=="pausa"){
-                  if(next_status="buscado" || next_status=="pausa"){
+                var s=d.act+next_status;
+                if(punts[s]==undefined){
+                  punts[s]=[];
+                  for(var i=0;i<=duration;i++) punts[s][i]=0;
+                }
+              /*
+                if(punts[s][parseInt(d.params)]==undefined){
+                  punts[s][parseInt(d.params)]=0;
+                }*/
+                punts[s][parseInt(d.params)]++;
+                console.log(punts);
+                /** eliminem el temps després d'una pausa perquè
+                el
+                gràfic es vegi més bé
+                */
+
+                if( d.act=="pausa"  ){
+                  if(next_status="buscado" || next_status=="pausa" ){
                         //items.push({y:d.ts-dt,x:0,group:group});
-                        data_g.push([0,d.ts-dt]);
+                        data_g.data.push([d.params,d.ts-dt-desfase]);
                         if(compta_desfase){
                           desfase+=data[i+1].ts-d.ts;
                         }
@@ -93,6 +111,7 @@ Log:
                   }
                   if(next_status=="play" ){ //una pausa molt gran que no volem que es visualitzi
                         //alert("desfase");
+                         data_g.data.push([d.params,d.ts-dt-desfase]);
                         if(compta_desfase){
                         desfase+=data[i+1].ts-d.ts;
                       }
@@ -124,7 +143,7 @@ Log:
           }else{
 
             if(i==l-1){
-              data_vis.push(data_g);
+              data_vis.push(data_g-desfase);
              //afegit ultim tros
             }
           
