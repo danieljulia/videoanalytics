@@ -18,10 +18,10 @@ add_action( 'admin_menu', 'videoanalytics_options_add_page' );
 
 
 function videoanalytics__adding_scripts() {
-     wp_enqueue_style(
-    'videoanalytics',
-    plugin_dir_url( __FILE__ )  . '/css/videoanalytics.css'
-);
+  wp_enqueue_style(
+      'videoanalytics',
+      plugin_dir_url( __FILE__ )  . '/css/videoanalytics.css'
+  );
 
   wp_register_script('flot', plugin_dir_url( __FILE__ ) . '/js/jquery.flot.js');
   wp_enqueue_script('flot');
@@ -31,6 +31,9 @@ function videoanalytics__adding_scripts() {
 
   wp_register_script('timeflot', plugin_dir_url( __FILE__ ) . '/js/jquery.flot.time.js');
   wp_enqueue_script('timeflot');
+
+  wp_register_script('videoanalytics', plugin_dir_url( __FILE__ ) . '/js/videoanalytics.js',null,1,true);
+  wp_enqueue_script('videoanalytics');
 
 }
 
@@ -210,6 +213,9 @@ function videoanalytics_api(){
   switch($method){
       case "sessions_videos":
         api("sessions_videos",array("video"=>$_GET['video']));
+        break;
+      case "session":
+        api("session",array("rndk"=>$_GET['rndk']));
         break;
 
   }

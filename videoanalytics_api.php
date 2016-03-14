@@ -31,7 +31,18 @@ function va_session_get($session_id,$track=""){
     $sql.=" order by ta asc";
 
     $posts = $wpdb->get_results($sql);
-    return $posts;
+    $res=array();
+    foreach($posts as $p){
+      //ta és el de l'acció      
+      $p->ts= (new DateTime($p->ta))->getTimestamp();
+
+      unset($p->rndk);
+      unset($p->ti);
+      unset($p->ta);
+
+      $res[]=$p;
+    }
+    return $res;
 }
 
 
@@ -101,6 +112,11 @@ function api($method,$params){
       case "sessions_videos":
       $posts=va_get_sessions_video($params['video']);
       print json_encode($posts);
+      break;
+
+       case "session":
+      $session=va_session_get($params['rndk']);
+      print json_encode($session);
       break;
 
 
