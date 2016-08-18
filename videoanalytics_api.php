@@ -6,8 +6,9 @@
 
 function va_get_sessions(){
 
-	global $wpdb; 
-  	$table_name = $wpdb->prefix . "videoanalytics";
+	global $wpdb;
+	$options = get_option( 'videoanalytics_options' );
+  	$table_name = $wpdb->prefix . 	$options['db_table'];
 
     $sql="SELECT *,count(*) as t FROM $table_name group by rndk order by ti desc";
 
@@ -23,8 +24,9 @@ retorna les dades d'una sessió en concret
 
 
 function va_session_get($session_id,$track=""){
-  global $wpdb; 
-  $table_name = $wpdb->prefix . "videoanalytics";
+  global $wpdb;
+	$options = get_option( 'videoanalytics_options' );
+  $table_name = $wpdb->prefix . 	$options['db_table'];
 
     $sql="SELECT * FROM $table_name where rndk=".$session_id;
     if($track!="") $sql.=" and video='$track' ";
@@ -33,7 +35,7 @@ function va_session_get($session_id,$track=""){
     $posts = $wpdb->get_results($sql);
     $res=array();
     foreach($posts as $p){
-      //ta és el de l'acció      
+      //ta és el de l'acció
       $p->ts= (new DateTime($p->ta))->getTimestamp();
 
       unset($p->rndk);
@@ -52,8 +54,9 @@ function va_session_get($session_id,$track=""){
 
 function va_get_videos($from="",$to=""){
 
-  global $wpdb; 
-  $table_name = $wpdb->prefix . "videoanalytics";
+  global $wpdb;
+	$options = get_option( 'videoanalytics_options' );
+  $table_name = $wpdb->prefix .	$options['db_table'];
 
   if($from=="" && $to==""){
     $sql="SELECT video,count(*) as t FROM $table_name group by video order by t desc";
@@ -68,15 +71,16 @@ function va_get_videos($from="",$to=""){
 
 function va_get_sessions_video($video){
 
-  global $wpdb; 
-    $table_name = $wpdb->prefix . "videoanalytics";
+  global $wpdb;
+		$options = get_option( 'videoanalytics_options' );
+    $table_name = $wpdb->prefix . $options['db_table'];
 
     $sql="SELECT * FROM $table_name WHERE video='$video' order by rndk, ta asc";
 
     $posts = $wpdb->get_results($sql);
     $res=array();
     foreach($posts as $p){
-      //ta és el de l'acció      
+      //ta és el de l'acció
       $p->ts= (new DateTime($p->ta))->getTimestamp();
 
       unset($p->video);
@@ -129,16 +133,17 @@ function api($method,$params){
 
 
 /**
-demanar durada video a vimeo 
+demanar durada video a vimeo
 */
 
 
-//test 
+//test
 //$duration=videoanalytics_get_duration('06507_m2_exercici6');
 //print "duration : ".$duration;
 
 function videoanalytics_get_duration($video_name){
   global $wpdb;
+		$options = get_option( 'videoanalytics_options' );
   //primer mirar si existeix a la base de dades
   $table_name = $wpdb->prefix . "videoanalytics_video";
   $query="SELECT * FROM $table_name WHERE video='".$video_name."'";
@@ -149,19 +154,19 @@ function videoanalytics_get_duration($video_name){
     return $results[0]->duration;
 
   }
-  
+
 
   //en cas contrari demanar a vimeo i guardar resultat
   //com sembla que no es pot demanar a vimeo s'estima amb aquesta query
-  $table_name_main = $wpdb->prefix . "videoanalytics";
+  $table_name_main = $wpdb->prefix . $options['db_table'];
    $query="SELECT * FROM $table_name_main WHERE video='".$video_name."' and act='pausa' order by params desc";
    $results=$wpdb->get_results($query);
-  
+
    if(count($results)>0){
     $timestamp = date('Y-m-d G:i:s');
     $duration=$results[0]->params;
     $query="INSERT INTO $table_name (video,duration,updated) values ('$video_name',$duration, '$timestamp')";
-    
+
     $wpdb->query($query);
     return $duration;
 

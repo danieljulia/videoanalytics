@@ -19,12 +19,20 @@ ul.videoanalytics-menu  li a {
 }
 
 
-ul.log li.legend{
+div.log-list .legend{
 	background-color: #aaa;
 	font-weight: bold;
 }
 
-ul.log li{
+.log-list ul{
+  display:none;
+}
+div.log-list ul{
+	background-color: #aaa;
+	font-weight: bold;
+}
+
+div.log-list li{
 	background-color: #eee;
 }
 

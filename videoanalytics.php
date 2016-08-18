@@ -14,7 +14,7 @@ License: License: GPLv2
 require "videoanalytics_api.php";
 
 add_action( 'admin_init', 'videoanalytics_options_init' );
-add_action( 'admin_menu', 'videoanalytics_options_add_page' ); 
+add_action( 'admin_menu', 'videoanalytics_options_add_page' );
 
 
 function videoanalytics__adding_scripts() {
@@ -37,7 +37,20 @@ function videoanalytics__adding_scripts() {
 
 }
 
- 
+
+function admin_inline_js(){
+
+ $options = get_option( 'videoanalytics_options' );
+  ?>
+	<script>
+  var max_y=<?php print $options['normalize_y']?>;
+  </script>
+
+  <?php
+}
+add_action( 'admin_print_scripts', 'admin_inline_js' );
+
+
 add_action( 'admin_enqueue_scripts', 'videoanalytics__adding_scripts' );
 
 
@@ -45,7 +58,7 @@ add_action( 'admin_enqueue_scripts', 'videoanalytics__adding_scripts' );
 /* registrar les opcions del plugin */
 function videoanalytics_options_init(){
  register_setting( 'videoanalytics_options', 'videoanalytics_options');
-} 
+}
 
 /* afegir pàgina a l'escriptori*/
 
@@ -56,66 +69,63 @@ function videoanalytics_options_add_page() {
   __( 'Opcions de Newsletter', 'videoanalytics_' ),
   __( 'Opcions de Newsletter', 'videoanalytics_' ),
    'edit_theme_options', 'videoanalytics_options', 'ppp_newsletter_options_do_page' );*/
-} 
+}
 
 function videoanalytics_options_do_page() {
 
   global $options;
 
-  if ( ! isset( $_REQUEST['settings-updated'] ) ) $_REQUEST['settings-updated'] = false; 
+  if ( ! isset( $_REQUEST['settings-updated'] ) ) $_REQUEST['settings-updated'] = false;
   ?>
 <div>
 <?php screen_icon(); echo "<h2>". __( 'Video analytics configuration', 'mt' ) . "</h2>"; ?>
 <?php if ( false !== $_REQUEST['settings-updated'] ) : ?>
 <div>
 <p><strong><?php _e( 'Options saved', 'mt' ); ?></strong></p></div>
-<?php endif; ?> 
+<?php endif; ?>
 <form method="post" action="options.php">
-<?php settings_fields( 'videoanalytics_options' ); ?>  
-
-<?php $options = get_option( 'videoanalytics_options' ); 
-
+<?php settings_fields( 'videoanalytics_options' ); ?>
+<?php $options = get_option( 'videoanalytics_options' );
 ?>
 
 <table>
-
-
 <?php
- 
-
-if(!isset($options['db_name'])){
-  $options['db_name']="";
+if(!isset($options['db_table'])){
+  $options['db_table']="videoanalytics";
 }
-
+if( !isset($options['normalize_y']) || $options['normalize_y']=="" ){
+  $options['normalize_y']=5;
+}
 ?>
 
+<tr>
 
-
-<p>
-<!--Name of database -->
-
-</p>
-<tr valign="top"><th scope="row">
-<?php print __("Database name","mt")?></th>
 <td>
-<input id="videoanalytics_options[db_name]" type="text" name="videoanalytics_options[db_name]" value="<?php esc_attr_e( $options['db_name'] ); ?>" />
+<?php print __("Database name","videoanalytics")?>:
+ <?php global $wpdb;  print $wpdb->prefix ?>
+
+<input id="videoanalytics_options[db_table]" type="text" name="videoanalytics_options[db_table]" value="<?php esc_attr_e( $options['db_table'] ); ?>" /></td>
+</tr>
+<tr>
+
+<td><?php print __("Max pause time (seconds)","videoanalytics")?>
+<input id="videoanalytics_options[normalize_y]" type="text" name="videoanalytics_options[normalize_y]" value="<?php esc_attr_e( $options['normalize_y'] ); ?>" />
 </td>
-</tr> 
 
+</tr>
 
-</table> 
+</table>
 <p>
-<input type="submit" value="<?php print __("Save the options","mt");?>" />
+<input type="submit" value="<?php print __("Save the options","videoanalytics");?>" />
 </p>
 </form>
 
 </div>
-<?php 
-} 
+<?php
+}
 
 
 /** add option to wp menu*/
-
 
 add_action('admin_menu','my_plugin_menu');
 
@@ -125,16 +135,14 @@ function my_plugin_menu(){
 
 function my_plugin_options(){
 
-
-
 ?>
   <div class="wrap">
   <nav>
   <ul class="videoanalytics-menu">
-   <li><a href="admin.php?page=videoanalytics&option=main">Main</a></li> 
-   <li><a href="admin.php?page=videoanalytics&option=sessions">Sessions</a></li> 
-   <li><a href="admin.php?page=videoanalytics&option=videos">Videos</a></li> 
-   <li><a href="admin.php?page=videoanalytics&option=dates">Dates</a></li> 
+   <li><a href="admin.php?page=videoanalytics&option=main">Main</a></li>
+   <li><a href="admin.php?page=videoanalytics&option=sessions">Sessions</a></li>
+   <li><a href="admin.php?page=videoanalytics&option=videos">Videos</a></li>
+   <li><a href="admin.php?page=videoanalytics&option=dates">Dates</a></li>
   </ul>
   </nav>
 </div>
@@ -170,25 +178,15 @@ function my_plugin_options(){
         break;
 
   }
-
-  
-
-  
   ?>
-
-
   </div>
   <?php
 }
 
-
-/** crides ajax 
-
+/** crides ajax
 totes es fan a la url
 http://192.168.1.200/projects/2016_a/videoanalytics/wordpress/wp-admin/admin-ajax.php?action=videoanalytics_do_ajax_request
-
-
- admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=0.6015316601842642
+admin-ajax.php?action=videoanalytics_do_ajax_request&rndk=0.6015316601842642
 */
 
 add_action( 'wp_ajax_videoanalytics_do_ajax_request', 'videoanalytics_do_ajax_request' );
@@ -200,6 +198,7 @@ add_action( 'wp_ajax_nopriv_videoanalytics_api', 'videoanalytics_api' );
 per testejar
 http://kiwoo.dev/videoanalytics/wordpress/wp-admin/admin-ajax.php?action=videoanalytics_api&method=sessions_video&video=06507_m2_exercici_11
 */
+
 function videoanalytics_api(){
   if(isset($_GET['method'])){
     $method=$_GET['method'];
@@ -207,7 +206,7 @@ function videoanalytics_api(){
   if(isset($_GET['download'])){ //forçar download
     //todo mostrar info dades al json
      header('Content-Disposition: attachment; filename="videoanalytics_data.json"');
-     
+
   }
 
   switch($method){
@@ -220,8 +219,8 @@ function videoanalytics_api(){
 
   }
 
-  
-  exit(); 
+
+  exit();
 
 
 }
@@ -233,7 +232,7 @@ function videoanalytics_do_ajax_request(){
     $track=$_GET['track'];
   }
 
- 
+
 
 
   $data=va_session_get($_GET['rndk'],$track);
@@ -270,13 +269,13 @@ date_timestamp_set($date, $ts);
     //si el seguent torna a ser un play del mateix video...
     if($c<$total-1){
       if($data[$c+1]->act=="play" && $data[$c+1]->video==$data[$c]->video){
-            
-            
+
+
             $ts2=$data[$c+1]->params;
-         
+
             $date2=date_create();
             date_timestamp_set($date2, $ts);
-             
+
             ?>
             {"i":"blah","c":[{"v":<?php print $d->params?>},{"v":"Date( <?php print date_format($date2,"Y,m,d,H,i,s") ?>)"}]},
 
@@ -303,7 +302,7 @@ date_timestamp_set($date, $ts);
 
       }
     }
-   
+
 
   }
 
@@ -313,14 +312,14 @@ endforeach;
 
 ]}
 <?php
- 
+
   exit();
 }
 
 /*
 add_action('init', function() {
 
-  
+
 
 $url = $_SERVER['REQUEST_URI'];
 $tokens = explode('/', $url);
@@ -333,13 +332,13 @@ if(count($url2)>1){
 
 
   if ( $url_path === 'mailchimp-template' ) {
-    
+
     //$file_name='/mailchimp-templates/mailchimp-main-template.php';
     $file_name='/send-newsletter.php';
     //load_template( 'send-newsletter.php' );
     //load_template( 'mailchimp-templates/mailchimp-main-template.php' );
 
-    
+
      // load the file if exists
      if ( $overridden_template = locate_template( $file_name ) ) {
    // locate_template() returns path to file
@@ -353,7 +352,7 @@ if(count($url2)>1){
    exit();
  }
 
-     
+
   }
 });
 */
@@ -367,7 +366,7 @@ function videoanalytics_video_install(){
   global $wpdb;
 
   $charset_collate = $wpdb->get_charset_collate();
-     $table_name = $wpdb->prefix . "videoanalytics_video"; 
+     $table_name = $wpdb->prefix . "videoanalytics_video";
 
 
   $sql="CREATE TABLE IF NOT EXISTS $table_name (

@@ -8,7 +8,7 @@ $url=get_bloginfo('wpurl').'/wp-admin/admin-ajax.php?action=videoanalytics_api&m
 
 
 <h2>
-Session: <?php print $rndk ?></h2> 
+Session: <?php print $rndk ?></h2>
 <p class="info">
 
 <span class="more-info"></span></p>
@@ -17,15 +17,15 @@ Session: <?php print $rndk ?></h2>
 <div class="vis-container">
       <div class="vis-placeholder"></div>
     </div>
-  
+
 <a id="dl" download="Canvas.png" href="#">Download Image</a>
 
 <p><a href="<?php print $url."&download"?>"><?php _e("Download data")?></a>
 </p>
 <div class="log">
 Log:
-<ul class="log">
-</ul>
+<div class="log-list">
+</div>
 </div>
 <script type="text/javascript">
 var group_separator="video";
