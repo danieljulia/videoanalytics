@@ -24,6 +24,10 @@ div.log-list .legend{
 	font-weight: bold;
 }
 
+div.log-list .view{
+  cursor: pointer;
+}
+
 .log-list ul{
   display:none;
 }

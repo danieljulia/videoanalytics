@@ -1,14 +1,15 @@
 
-//var max_y=5; //todo config
-//variables globals
+//global variables
 var compta_desfase=true;
 var data_vis;
 var punts=[];
 var ctx;
-var data_g=[];
+var data_g;
 var data;
 var current_group="";
-/** carregar dades */
+var group;
+var first_time=true;
+/** load data */
 
 function ajax_load(url){
     jQuery.getJSON(url,function(indata){
@@ -18,26 +19,26 @@ function ajax_load(url){
 }
 
 
-/** crear gràfic */
+/** create graph */
 
 function init(){
   var items=[];
   var last="";
-  var group=0;
+  data_g=[];
+
   var dt=0;
   var desfase=0;
   var l=data.length;
   var txt="";
   var c=0;
 
-  //data_g=[];
-  data_g={label:group,data:[]}; //co
+  data_g={label:group,data:[]};
   data_vis=[];
+  group=0;
 
   for(var i=0;i<l;i++){
 
     var d=data[i];
-
 
     if(d[group_separator]!=last){ //add a new group in visualization
 
@@ -48,50 +49,33 @@ function init(){
         last=d[group_separator];
         group++;
 
-        if(current_group=="" || current_group==group){
-          console.log("afegint el grup",group);
-          data_vis.push(data_g);
-
+        if( (current_group=="" || current_group==group-1) && last!="" ){
+          if(data_g.data.length>0)
+            data_vis.push(data_g);
         }
-            data_g={label:group,data:[]}; //color?
-        //todo cal afegir l'ultim correctament!
-        txt+="<p class='legend'>Group "+group+" "+group_separator+": "+last;
-        txt+=" <span class='view'>view</span>  <span class='graph'>graph</span> "+"</p>";
+        data_g={label:group,data:[]}; //color?
 
+        txt+="<p class='legend'>Group "+group+" "+group_separator+": "+last;
+        txt+="| <span class='view'>view</span> "+"</p>";
         txt+="<ul data-group="+group+" class='legend'>";
 
         c=0;
 
     }
 
-   // items.push({y:d.ts-dt-desfase,x:parseFloat(d.params),group:group});
    if(c>0){
-     //si es una pausa
+
      d2=data[i-1];
 
-     //si temps va enrrera x i hi ha increment y
+     //if time goes back correct max increment
      if(d.params==d2.params){
-
        var dy=d.ts-d2.ts;
-
        if(dy>max_y) desfase=desfase-max_y+dy;
      }
 
-
      if(d.params<(d2.params-1)){
 
-       //limitar increment y
-       //el desfase ja esta corregit abans
-       //var dy=d.ts-d2.ts;
-       //if(dy>max_y) desfase=desfase-max_y+dy;
-       //afegir tram
-       console.log("correccio a grup",group,d.params,d2.params);
-
-       //var dy=d.ts-d2.ts+dt+desfase;
-       //if(dy>max_y) desfase=desfase-max_y+dy;
-
        data_g.data.push([d.params,d2.ts-dt-desfase]);
-       //ara cal corregir desfase y per la següent
 
        var dy=d.ts-d2.ts;
        if(dy>max_y) desfase=desfase-max_y+dy;
@@ -102,7 +86,6 @@ function init(){
    data_g.data.push([parseFloat(d.params),d.ts-dt-desfase]);
 
   txt+="<li>"+d.act+" "+(d.ts-dt)+" "+d.params;
-//  if(desfase>0) txt+=" pausa acumulada: "+desfase;
   txt+="</li>";
 
 
@@ -123,26 +106,30 @@ function init(){
         }
 
     }else{ //l'ultim
-      data_vis.push(data_g);
+      if(current_group=="" || current_group==group)
+        data_vis.push(data_g);
 
     }
-    //fi si te següent
+
 if(i==l-1) txt+="</ul>";
     c++;
   }//end for
 
+  if(first_time){
 
-  jQuery("div.log-list").html(txt);
-  addLogEvents();
-  jQuery(".more-info").html(group+" groups");
+      jQuery("div.log-list").html(txt);
+      addLogEvents();
+      jQuery(".more-info").html(group+" groups");
+
+  }
+  first_time=false;
   doVis();
 }
 
-/** mostra visualització*/
+/** show visualization */
 function doVis(){
 
-    //veure exemple view-source:http://www.flotcharts.org/flot/examples/canvas/
-
+    // http://www.flotcharts.org/flot/examples/canvas/
 
     var options = {
       canvas: true
@@ -175,20 +162,26 @@ function doVis(){
 
 
 function addLogEvents(){
+
   jQuery('.legend .view').on('click',function(){
-    console.log("clicat",jQuery(this).parent().next());
-    jQuery(this).parent().next().toggle('fast');
-  });
-  jQuery('.legend .graph').on('click',function(){
-    console.log("clicat",jQuery(this).parent().next());
+    jQuery('.log-list ul').hide();
     var group=jQuery(this).parent().next().data('group');
     current_group=group;
     init();
+    jQuery(this).parent().next().toggle('fast');
+  });
+
+  jQuery('#view-all').on('click',function(ev){
+    jQuery('.log-list ul').hide();
+    ev.preventDefault();
+    current_group="";
+    init();
+
   });
 }
 
 
-/**descarregar imatge*/
+/** download graph */
 
 function dlCanvas() {
   var dt = ctx.toDataURL('image/png');

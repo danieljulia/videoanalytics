@@ -25,7 +25,7 @@ $duration=videoanalytics_get_duration($video);
 <p><a href="<?php print $url."&download"?>"><?php _e("Download data")?></a>
 </p>
 <div class="log">
-Log:
+<br><a id='view-all' href='#'>view all</a>
 <div class="log-list">
 </div>
 </div>
