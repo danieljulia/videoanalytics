@@ -251,7 +251,10 @@ $total=count($data);
 
 foreach($data as $d):
 
-  $ts=(new DateTime($d->ta))->getTimestamp();
+  //$ts=(new DateTime($d->ta))->getTimestamp();
+  $nd=new DateTime($d->ta);
+  $ts=$nd->getTimestamp();
+
 
 $date=date_create();
 date_timestamp_set($date, $ts);
